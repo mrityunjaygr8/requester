@@ -3,6 +3,8 @@
 This script sets up the config requred to request tls certs from the specified cfssl issuing server  
 This script uses cfssl and cfssljson packages from Cloudflare's cfssl library  
 
+Designed to be used alongside [issuer](https://github.com/mrityunjaygr8/issuer/)
+
 ```
 Usage: requester.sh [OPTIONS]
 
