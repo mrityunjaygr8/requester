@@ -20,7 +20,7 @@ Options:
 -h, --help              Show this message and exit
 
 Example:
-  requester.sh --target-dir requester --issuer-host "https://issuer.example.com:8888" --api-pass="7be2e3fda569b88b"
+  requester.sh --target-dir requester --issuer-host "https://issuer.example.com:8888" --api-pass "7be2e3fda569b88b" --requester-cn "Requester Cn"
 
 In Case tls is used by the issuing server, its tls-cert needs to be copied into this machine
 A new Certificate can be rqeusted as follows
@@ -33,3 +33,4 @@ For more information, please consult the cfssl documentation
 #### TODO
 - [ ] Check if binaries are present
 - [ ] Download binaries if required
+- [ ] Use the script to actually request the CA

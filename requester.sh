@@ -76,7 +76,7 @@ function usage {
     echo -e "-h, --help\t\tShow this message and exit"
     echo 
     echo "Example:"
-    echo "  requester.sh --target-dir requester --issuer-host \"https://issuer.example.com:8888\" --api-pass=\"7be2e3fda569b88b\""
+    echo "  requester.sh --target-dir requester --issuer-host \"https://issuer.example.com:8888\" --api-pass \"7be2e3fda569b88b\" --requester-cn \"Requester CN\""
     echo
     echo "In Case tls is used by the issuing server, its tls-cert needs to be copied into this machine"
     echo "A new Certificate can be rqeusted as follows"
