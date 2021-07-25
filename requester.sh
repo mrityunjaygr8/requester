@@ -81,7 +81,7 @@ function request_cert {
     local readonly ISSUER_PEM="$3"
     local readonly OUT_DIR="$4"
 
-    cfssl gencert -config=requester.config.json -hostname="$HOSTNAME" -profile="default" -tls-remote-ca $ISSUER_PEM requester.config.json | cfssljson -bare $CERT_NAME
+    cfssl gencert -config=requester.config.json -hostname="$HOSTNAME" -profile="default" -tls-remote-ca $ISSUER_PEM requester.csr.json | cfssljson -bare $CERT_NAME
     if [ ! -z "$OUT_DIR" ]
     then
         log_info "Moving $CERT_NAME.pem and $CERT_NAME-key.pem to $OUT_DIR"
