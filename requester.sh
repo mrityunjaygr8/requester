@@ -1,6 +1,7 @@
 #!/bin/bash
 
 readonly SCRIPT_NAME="$(basename "$0")"
+
 function ensure_binaries_accessible {
     if ! [ -x "$(command -v cfssl)" ]; then
         log_error "CFSSL is not installed"
@@ -74,6 +75,20 @@ function hex_string_is_valid {
     esac    
 }
 
+function request_cert {
+    local readonly HOSTNAME="$1"
+    local readonly CERT_NAME="$2"
+    local readonly ISSUER_PEM="$3"
+    local readonly OUT_DIR="$4"
+
+    cfssl gencert -config=requester.config.json -hostname="$HOSTNAME" -profile="default" -tls-remote-ca $ISSUER_PEM requester.config.json | cfssljson -bare $CERT_NAME
+    if [ ! -z "$OUT_DIR" ]
+    then
+        log_info "Moving $CERT_NAME.pem and $CERT_NAME-key.pem to $OUT_DIR"
+        mv "$CERT_NAME.pem" "$CERT_NAME-key.pem" $OUT_DIR
+    fi
+}
+
 function usage {
     echo 
     echo "Usage: requester.sh [OPTIONS]"
@@ -87,15 +102,14 @@ function usage {
     echo -e "--requester-cn\t\tThe CN of the requested certificates. Required"
     echo -e "--issuer-host\t\tDNS name or the IP address and the port of the hosts where the issuer can be accessed. Defaults to \"https://localhost:8888\""
     echo -e "--api-pass\t\tThe Passowrd for the issuer API. Should be a 16 byte hex string. Can be generated using https://www.browserling.com/tools/random-hex. Required"
+    echo -e "--hostname\t\tThe Hostname for the Certificate. Required."
+    echo -e "--cert-name\t\tThe Name of the certificate. Defaults to \"cert\""
+    echo -e "--issuer-pem\t\tThe Location of the issuer server pem. Required"
+    echo -e "--out-dir\t\tThe Location where to export the Cert and Key. Defaults to the target-dir"
     echo -e "-h, --help\t\tShow this message and exit"
     echo 
     echo "Example:"
-    echo "  requester.sh --target-dir requester --issuer-host \"https://issuer.example.com:8888\" --api-pass \"7be2e3fda569b88b\" --requester-cn \"Requester CN\""
-    echo
-    echo "In Case tls is used by the issuing server, its tls-cert needs to be copied into this machine"
-    echo "A new Certificate can be rqeusted as follows"
-    echo
-    echo "  cfssl gencert -config=requester.config.json -hostname=\"requester.example.com\" -profile=\"default\" -tls-remote-ca issuer.pem requester.config.json | cfssljson -bare requester"
+    echo "  requester.sh --target-dir requester --issuer-host \"https://issuer.example.com:8888\" --api-pass \"7be2e3fda569b88b\" --requester-cn \"Requester CN\" --hostname \"requester.example.com\" --issuer-pem ../issuer.pem"
     echo
     echo "For more information, please consult the cfssl documentation"
 }
@@ -139,6 +153,10 @@ function main {
     local REQUESTER_CN=""
     local ISSUER_HOST="https://localhost:8888"
     local API_PASS=""
+    local HOSTNAME=""
+    local CERT_NAME="cert"
+    local ISSUER_PEM=""
+    local OUT_DIR=""
     while [[ $# -gt 0 ]]; do
         key="$1"
 
@@ -160,6 +178,26 @@ function main {
             ;;
             --api-pass)
             API_PASS="$2"
+            shift
+            shift
+            ;;
+            --hostname)
+            HOSTNAME="$2"
+            shift
+            shift
+            ;;
+            --cert-name)
+            CERT_NAME="$2"
+            shift
+            shift
+            ;;
+            --issuer-pem)
+            ISSUER_PEM="$2"
+            shift
+            shift
+            ;;
+            --out-dir)
+            OUT_DIR="$2"
             shift
             shift
             ;;
@@ -200,6 +238,7 @@ function main {
     log_info "Creating the Requester config"
     create_config_file "$ISSUER_HOST" "$API_PASS"
     log_info "Requesting a certificate"
+    request_cert "$HOSTNAME" "$CERT_NAME" "$ISSUER_PEM" "$OUT_DIR"
 }
 
 main "$@"

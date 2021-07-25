@@ -31,6 +31,6 @@ For more information, please consult the cfssl documentation
 ```
 
 #### TODO
-- [ ] Check if binaries are present
+- [x] Check if binaries are present
 - [ ] Download binaries if required
-- [ ] Use the script to actually request the CA
+- [x] Use the script to actually request the CA
