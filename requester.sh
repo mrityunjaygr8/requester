@@ -1,5 +1,18 @@
 #!/bin/bash
 
+function ensure_binaries_accessible {
+    if ! [ -x "$(command -v cfssl)" ]; then
+        log_error "CFSSL is not installed"
+        exit 1
+    fi
+
+    if ! [ -x "$(command -v cfssljson)" ]; then
+        log_error "CFSSLJSON is not installed"
+        exit 1
+    fi
+
+}
+
 function create_csr_files {
     local readonly REQUESTER_CN="$1"
     cat <<EOL > "./requester.csr.json"
@@ -138,6 +151,7 @@ function main {
         usage
         exit 1
     fi
+    ensure_binaries_accessible
 
     hex_string_is_valid "$API_PASS"
     PASS_VALID="$?"
