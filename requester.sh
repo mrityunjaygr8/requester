@@ -1,5 +1,6 @@
 #!/bin/bash
 
+readonly SCRIPT_NAME="$(basename "$0")"
 function ensure_binaries_accessible {
     if ! [ -x "$(command -v cfssl)" ]; then
         log_error "CFSSL is not installed"
@@ -99,6 +100,40 @@ function usage {
     echo "For more information, please consult the cfssl documentation"
 }
 
+# Taken from: https://github.com/hashicorp/terraform-aws-consul/blob/master/modules/install-consul/install-consul
+function log {
+  local -r level="$1"
+  local -r message="$2"
+  local -r timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+  >&2 echo -e "${timestamp} [${level}] [$SCRIPT_NAME] ${message}"
+}
+
+function log_info {
+  local -r message="$1"
+  log "INFO" "$message"
+}
+
+function log_warn {
+  local -r message="$1"
+  log "WARN" "$message"
+}
+
+function log_error {
+  local -r message="$1"
+  log "ERROR" "$message"
+}
+
+function assert_not_empty {
+  local -r arg_name="$1"
+  local -r arg_value="$2"
+
+  if [[ -z "$arg_value" ]]; then
+    log_error "The value for '$arg_name' cannot be empty"
+    print_usage
+    exit 1
+  fi
+}
+
 function main {
     local TARGET_DIR="."
     local REQUESTER_CN=""
@@ -139,34 +174,32 @@ function main {
         esac
     done
 
-    if [ -z "$REQUESTER_CN" ]
-    then
-        echo "The requester-cn cannot be blank"
-        usage
-        exit 1
-    fi
-    if [ -z "$API_PASS" ]
-    then
-        echo "The api-pass cannot be blank"
-        usage
-        exit 1
-    fi
     ensure_binaries_accessible
+
+    assert_not_empty "requester-cn" "$REQUESTER_CN"
+    assert_not_empty "api-pass" "$API_PASS"
+    assert_not_empty "hostname" "$HOSTNAME"
+    assert_not_empty "issuer-pem" "$ISSUER_PEM"
 
     hex_string_is_valid "$API_PASS"
     PASS_VALID="$?"
     if [ "$PASS_VALID" -ne 0 ]
     then
-        echo "Improper api-ass. Please enter a 16 byte hex string"
-        echo "You can use https://www.browserling.com/tools/random-hex to generate a valid api-pass"
+        log_error "Improper api-pass. Please enter a 16 byte hex string"
+        log_error "You can use https://www.browserling.com/tools/random-hex to generate a valid api-pass"
         usage
         exit 1
     fi
-    set -xe
+    log_info "Creating target directory, \"$TARGET_DIR\", if it does not exist"
     mkdir -p "$TARGET_DIR"
+    log_info "Copying the Issuer Pem to \"$TARGET_DIR\""
+    cp "$ISSUER_PEM" "$TARGET_DIR"
     cd "$TARGET_DIR"
+    log_info "Creating the CSR Files"
     create_csr_files  "$REQUESTER_CN" 
+    log_info "Creating the Requester config"
     create_config_file "$ISSUER_HOST" "$API_PASS"
+    log_info "Requesting a certificate"
 }
 
 main "$@"
