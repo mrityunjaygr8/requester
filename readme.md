@@ -18,9 +18,13 @@ Options:
 --issuer-host           DNS name or the IP address and the port of the hosts where the issuer can be accessed. Defaults to "https://localhost:8888"
 --api-pass              The Passowrd for the issuer API. Should be a 16 byte hex string. Can be generated using https://www.browserling.com/tools/random-hex. Required
 -h, --help              Show this message and exit
+--hostname              The Hostname for the Certificate. Required.
+--cert-name             The Name of the certificate. Defaults to \"cert\"
+--issuer-pem            The Location of the issuer server pem. Required
+--out-dir               The Location where to export the Cert and Key. Defaults to the target-dir
 
 Example:
-  requester.sh --target-dir requester --issuer-host "https://issuer.example.com:8888" --api-pass "7be2e3fda569b88b" --requester-cn "Requester Cn"
+  requester.sh --target-dir requester --issuer-host "https://issuer.example.com:8888" --api-pass "7be2e3fda569b88b" --requester-cn "Requester CN" --hostname "requester.example.com" --issuer-pem ../issuer.pem
 
 In Case tls is used by the issuing server, its tls-cert needs to be copied into this machine
 A new Certificate can be rqeusted as follows
