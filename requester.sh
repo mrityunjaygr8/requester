@@ -239,6 +239,7 @@ function main {
     create_config_file "$ISSUER_HOST" "$API_PASS"
     log_info "Requesting a certificate"
     request_cert "$HOSTNAME" "$CERT_NAME" "$ISSUER_PEM" "$OUT_DIR"
+    log_info "ALL DONE"
 }
 
 main "$@"
